@@ -2,9 +2,9 @@ name: Building price scraper
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [ main ]
   pull_request:
-    branches: [ $default-branch ]
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -17,12 +17,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v5
+    - uses: getsentry/action-setup-venv@v2.1.0
+      id: venv
       with:
-        python-version: "3.11"
-        cache: "pip"
-    - name: Install dependencies
+        python-version: 3.11
+        cache-dependency-path: |
+          requirements.txt
+          requirements-frozen.txt
+        install-cmd: pip install -r requirements.txt -c requirements-frozen.txt
+    - name: Test build
       run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        cd price_scraper
+        scrapy --help
+
