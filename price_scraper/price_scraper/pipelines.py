@@ -27,6 +27,7 @@ class PriceScraperPipeline:
     def open_spider(self, spider):
         self.portfolio_to_exporter = {}
         self.stored_dates = defaultdict(set)
+        self.base_directory = f"{spider.base_dir}/{spider.name}"
 
     def close_spider(self, spider):
         for exporter, json_file in self.portfolio_to_exporter.values():
@@ -36,7 +37,6 @@ class PriceScraperPipeline:
     def _exporter_for_item(self, adapter):
         name = self.file_name(adapter["name"])
         if name not in self.portfolio_to_exporter:
-            self._load_file(name)
             self._create_exporter(name)
         return self.portfolio_to_exporter[name][0]
 
@@ -55,11 +55,14 @@ class PriceScraperPipeline:
         Creates an exporter. If the file already exists we will append to it.
         Otherwise we create a new one.
         """
-        file_name = f"{name}.json"
-        file_exists = Path(file_name).exists()
+
+        file_path = Path(f"{self.base_directory}/{name}.json")
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_exists = file_path.exists()
         if file_exists:
-            truncate_utf8_chars(file_name, 1)
-        json_file = open(file_name, "ab" if file_exists else "wb")
+            self._load_file(name, file_path)
+            truncate_utf8_chars(file_path, 1)
+        json_file = file_path.open("ab" if file_exists else "wb")
         exporter = JsonItemExporter(json_file)
         if file_exists:
             exporter.first_item = False
@@ -67,15 +70,14 @@ class PriceScraperPipeline:
             exporter.start_exporting()
         self.portfolio_to_exporter[name] = (exporter, json_file)
 
-    def _load_file(self, name):
+    def _load_file(self, name, file_path):
         """Stores the dates for a particular file name and returns the loaded data"""
         if name in self.stored_dates:
             return
-        file_name = f"{name}.json"
-        if not Path(file_name).exists():
+        if not file_path.exists():
             return
 
-        with open(file_name, "rb") as f:
+        with file_path.open("rb") as f:
             data = json.load(f)
             for elem in data:
                 self.stored_dates[name].add(elem["date"])
