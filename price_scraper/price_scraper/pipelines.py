@@ -61,9 +61,9 @@ class PriceScraperPipeline:
         file_exists = file_path.exists()
         if file_exists:
             self._load_file(name, file_path)
-            truncate_utf8_chars(file_path, 1)
+            truncate_utf8_chars(file_path, 2, ignore_newlines=False)
         json_file = file_path.open("ab" if file_exists else "wb")
-        exporter = JsonItemExporter(json_file)
+        exporter = JsonItemExporter(json_file, indent=True)
         if file_exists:
             exporter.first_item = False
         else:

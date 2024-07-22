@@ -25,8 +25,17 @@ jobs:
         install-cmd: pip install -r requirements.txt -c requirements-frozen.txt
     - name: Scrape historical prices
       run: |
-        ls -lah .
-        ls -lah pp-data
+        cd price_scraper
+        scrapy crawl aranykor -a base_dir ../pp-data
     - name: Push historical prices to pp-data
-      run: |
-        echo bla2
+      uses: cpina/github-action-push-to-another-repository@main
+      env:
+        SSH_DEPLOY_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+        API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+      with:
+        source-directory: 'pp-data'
+        commit-message: 'Update pricing data from ORIGIN_COMMIT'
+        destination-github-username: 'havasd'
+        destination-repository-name: 'pp-data'
+        user-email: github.wrist068@passinbox.com
+        target-branch: main
