@@ -32,8 +32,8 @@ class AranykorSpider(scrapy.Spider):
             date = prices[1]
             for idx, portfolio in enumerate(header, 2):
                 yield PortfolioPerformanceHistoricalPrice(
-                    name = portfolio,
-                    date = date.replace('.', '-'),
-                    price = float(prices[idx])
+                    name=portfolio,
+                    date=date.replace('.', '-'),
+                    price=float(prices[idx])
 
                 )

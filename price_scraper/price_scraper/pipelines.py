@@ -85,4 +85,4 @@ class PriceScraperPipeline:
     @staticmethod
     def file_name(name):
         """Normalizes file names"""
-        return unidecode(name.lower().replace(' ', '_'))
+        return unidecode(name.lower().replace(' ', '_').replace('/', '_'))
