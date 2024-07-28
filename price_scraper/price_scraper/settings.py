@@ -63,7 +63,7 @@ ROBOTSTXT_OBEY = True
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    "price_scraper.pipelines.PriceScraperPipeline": 300,
+    "price_scraper.price_exporter_pipeline.PriceExporterPipeline": 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

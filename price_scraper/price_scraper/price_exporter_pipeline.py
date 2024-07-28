@@ -1,9 +1,3 @@
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
-
 import json
 from pathlib import Path
 from unidecode import unidecode
@@ -16,7 +10,7 @@ from scrapy.exceptions import DropItem
 
 from .util import truncate_utf8_chars
 
-class PriceScraperPipeline:
+class PriceExporterPipeline:
     """
     Groups the item by portfolio and writes them into a json file.
 
@@ -63,7 +57,7 @@ class PriceScraperPipeline:
             self._load_file(name, file_path)
             truncate_utf8_chars(file_path, 2, ignore_newlines=False)
         json_file = file_path.open("ab" if file_exists else "wb")
-        exporter = JsonItemExporter(json_file, indent=True)
+        exporter = JsonItemExporter(json_file, indent=True, fields_to_export=['price', 'date', 'volume', 'day_low', 'day_high'])
         if file_exists:
             exporter.first_item = False
         else:

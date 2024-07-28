@@ -34,6 +34,7 @@ class AranykorSpider(scrapy.Spider):
                 yield PortfolioPerformanceHistoricalPrice(
                     name=portfolio,
                     date=date.replace('.', '-'),
-                    price=float(prices[idx])
-
+                    price=float(prices[idx]),
+                    long_name=portfolio,
+                    currency="HUF",
                 )

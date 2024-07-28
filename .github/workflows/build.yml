@@ -28,5 +28,7 @@ jobs:
     - name: Test build
       run: |
         cd price_scraper
-        scrapy --help
+        scrapy crawl aranykor -a base_dir=../test-dir
+        scrapy crawl mak -a base_dir=../test-dir
+        scrapy crawl bamosz -a base_dir=../test-dir
 

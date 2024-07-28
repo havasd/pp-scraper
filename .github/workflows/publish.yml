@@ -28,6 +28,7 @@ jobs:
         cd price_scraper
         scrapy crawl aranykor -a base_dir=../pp-data
         scrapy crawl mak -a base_dir=../pp-data
+        scrapy crawl bamosz -a base_dir=../pp-data
     - name: Push historical prices to pp-data
       uses: cpina/github-action-push-to-another-repository@main
       env:

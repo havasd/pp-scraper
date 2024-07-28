@@ -10,7 +10,7 @@ class PortfolioPerformanceHistoricalPrice(scrapy.Item):
     """
     Contains data for portfolio performance historical price data source
     """
-    
+
     # name of the instrument can be ISIN or explicit name depending on the scraped website
     name = scrapy.Field()
     # date of the price
@@ -23,3 +23,9 @@ class PortfolioPerformanceHistoricalPrice(scrapy.Item):
     day_low = scrapy.Field()
     # highest price during the day
     day_high = scrapy.Field()
+    # long name
+    long_name = scrapy.Field()
+    # Currency of the fund
+    currency = scrapy.Field()
+    # Start date of the fund
+    start_date = scrapy.Field()
