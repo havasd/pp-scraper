@@ -32,9 +32,10 @@ class AranykorSpider(scrapy.Spider):
             date = prices[1]
             for idx, portfolio in enumerate(header, 2):
                 yield PortfolioPerformanceHistoricalPrice(
-                    name=portfolio,
+                    file_name=portfolio,
                     date=date.replace('.', '-'),
                     price=float(prices[idx]),
-                    long_name=portfolio,
+                    name=f"Aranykor {portfolio}",
                     currency="HUF",
+                    symbol=f"ARANY_{portfolio[:5].upper()}"
                 )

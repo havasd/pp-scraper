@@ -53,8 +53,39 @@ class MakDailySpider(scrapy.Spider):
                     accrued_interest = float(product['accruedInterest'].replace(',', '.'))
                 price = bid_pct + accrued_interest / 100
 
+            long_name = security_type_to_long_name(security_type)
             yield PortfolioPerformanceHistoricalPrice(
-                name=f"{security_type}_{product['name']}",
+                file_name=f"{security_type}_{product['name']}",
                 date=product['settleDate'].replace('.', '-'),
-                price=price
+                price=price,
+                symbol=f"{security_type}_{product['name']}",
+                name=f"{long_name} {product['name']}",
+                start_date=product['issueDate']
             )
+
+def security_type_to_long_name(security_type: str):
+    """
+    Converts short bond security types to long names
+    """
+
+    match security_type:
+        case "1MÁP":
+            return "Egyéves Magyar Állampapír"
+        case "BABA":
+            return "Babakötvény"
+        case "BMÁP":
+            return "Bónusz Magyar Állampapír"
+        case "DKJ":
+            return "Diszkont Kincstárjegy"
+        case "EMÁP":
+            return "Euro Magyar Állampapír"
+        case "FixMÁP":
+            return "Fix Magyar Állampapír"
+        case "KTV":
+            return "Magyar Államkötvény"
+        case "MÁPP":
+            return "Magyar Állampapír Plusz"
+        case "PEMÁP":
+            return "Prémium Euró Magyar Állampapír"
+        case "PMÁP":
+            return "Prémium Magyar Állampapír"

@@ -29,7 +29,7 @@ class PriceExporterPipeline:
             json_file.close()
 
     def _exporter_for_item(self, adapter):
-        name = self.file_name(adapter["name"])
+        name = self.file_name(adapter["file_name"])
         if name not in self.portfolio_to_exporter:
             self._create_exporter(name)
         return self.portfolio_to_exporter[name][0]
@@ -37,9 +37,9 @@ class PriceExporterPipeline:
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
         exporter = self._exporter_for_item(adapter)
-        if adapter["date"] in self.stored_dates[self.file_name(adapter["name"])]:
+        if adapter["date"] in self.stored_dates[self.file_name(adapter["file_name"])]:
             raise DropItem(
-                f"Date {adapter['date']} is already stored for instrument {adapter['name']}"
+                f"Date {adapter['date']} is already stored for instrument {adapter['file_name']}"
             )
         exporter.export_item(item)
         return item
