@@ -1,5 +1,7 @@
 import os
 
+from unidecode import unidecode
+
 def truncate_utf8_chars(filename, count, ignore_newlines=True):
     """
     Truncates last `count` characters of a text file encoded in UTF-8.
@@ -32,3 +34,7 @@ def truncate_utf8_chars(filename, count, ignore_newlines=True):
                     f.truncate()
                     return
             offset += 1
+
+def sanitize_file_name(name):
+    """Normalizes file name for instruments"""
+    return unidecode(name.lower().replace(' ', '_').replace('/', '_'))

@@ -26,14 +26,13 @@ class BamoszSpider(scrapy.Spider):
                 fund_data = data_row.css('td::text').getall()
                 fund_data = sanitize_columns(fund_data)
                 yield PortfolioPerformanceHistoricalPrice(
-                    name=long_fund_name,
+                    security_name=long_fund_name,
                     file_name=isin,
                     # it has a trailing dot in the date but we shouldn't remove it
                     date=fund_data[3].replace('.', '-')[:-1],
                     price=float(fund_data[2].replace(',', '.')),
                     currency=fund_data[1],
                     isin=isin,
-                    symbol=isin,
                 )
 
 def sanitize_columns(columns):

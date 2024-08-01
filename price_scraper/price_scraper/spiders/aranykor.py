@@ -35,7 +35,7 @@ class AranykorSpider(scrapy.Spider):
                     file_name=portfolio,
                     date=date.replace('.', '-'),
                     price=float(prices[idx]),
-                    name=f"Aranykor {portfolio}",
+                    security_name=f"Aranykor {portfolio}",
                     currency="HUF",
-                    symbol=f"ARANY_{portfolio[:5].upper()}"
+                    ticker_symbol=f"ARANY_{portfolio[:5].upper()}"
                 )

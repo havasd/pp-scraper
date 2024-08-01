@@ -14,7 +14,7 @@ class PortfolioPerformanceHistoricalPrice(scrapy.Item):
     # name of the file to export the price data to
     file_name = scrapy.Field()
     # long name of the instrument
-    name = scrapy.Field()
+    security_name = scrapy.Field()
     # date of the price
     date = scrapy.Field()
     # last price
@@ -32,4 +32,6 @@ class PortfolioPerformanceHistoricalPrice(scrapy.Item):
     # ISIN if available
     isin = scrapy.Field()
     # symbol if available
-    symbol = scrapy.Field()
+    ticker_symbol = scrapy.Field()
+    # note about the instrument
+    note = scrapy.Field()

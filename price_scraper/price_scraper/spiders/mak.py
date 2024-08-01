@@ -21,7 +21,7 @@ class MakDailySpider(scrapy.Spider):
         content = response.json()
         for bond_type in content['data'].keys():
             yield scrapy.Request(
-                f"https://www.allampapir.hu/api/network_rate/m/get_prices/{bond_type}",
+                f"https://www.allampapir.hu/api/network_rate///m/get_prices/{bond_type}",
                 callback=self.parse_type
             )
 
@@ -54,13 +54,22 @@ class MakDailySpider(scrapy.Spider):
                 price = bid_pct + accrued_interest / 100
 
             long_name = security_type_to_long_name(security_type)
+            product_name = product['name'].removesuffix('_BABA').removesuffix('_EUR')
+            symbol = f"{security_type}_{product_name}"
+            # more sensible naming for DKJ
+            match security_type:
+                case "DKJ":
+                    product_name = product_name[1:]
+                    symbol = f"{security_type}{product_name}"
+
             yield PortfolioPerformanceHistoricalPrice(
                 file_name=f"{security_type}_{product['name']}",
                 date=product['settleDate'].replace('.', '-'),
                 price=price,
-                symbol=f"{security_type}_{product['name']}",
-                name=f"{long_name} {product['name']}",
-                start_date=product['issueDate']
+                ticker_symbol=symbol,
+                security_name=f"{long_name} {product_name}",
+                start_date=product['issueDate'],
+                currency=product['currency'],
             )
 
 def security_type_to_long_name(security_type: str):
@@ -83,7 +92,7 @@ def security_type_to_long_name(security_type: str):
             return "Fix Magyar Állampapír"
         case "KTV":
             return "Magyar Államkötvény"
-        case "MÁPP":
+        case "MÁPP" | "MÁPP_T":
             return "Magyar Állampapír Plusz"
         case "PEMÁP":
             return "Prémium Euró Magyar Állampapír"
