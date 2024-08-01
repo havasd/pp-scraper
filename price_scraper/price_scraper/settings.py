@@ -70,6 +70,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
+    "price_scraper.instrument_pipeline.InstrumentExporterPipeline": 200,
     "price_scraper.price_exporter_pipeline.PriceExporterPipeline": 300,
 }
 

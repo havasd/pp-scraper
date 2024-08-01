@@ -47,9 +47,9 @@ class MbhVPFSpider(scrapy.Spider):
                         file_name=portfolio,
                         date=date,
                         price=price,
-                        name=f"MBH Gondoskodás Nyugdíjpénztár {portfolio} portfólió",
+                        security_name=f"MBH Gondoskodás Nyugdíjpénztár {portfolio} portfólió",
                         currency="HUF",
-                        symbol=f"MBHNY_{portfolio[:5].upper()}"
+                        ticker_symbol=f"MBHNY_{portfolio[:5].upper()}"
                     )
 
     @staticmethod

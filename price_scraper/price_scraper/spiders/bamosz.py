@@ -30,14 +30,13 @@ class BamoszSpider(scrapy.Spider):
                 fund_data = sanitize_columns(fund_data)
                 currency = fund_data[1],
                 yield PortfolioPerformanceHistoricalPrice(
-                    name=long_fund_name,
+                    security_name=long_fund_name,
                     file_name=isin,
                     # it has a trailing dot in the date but we shouldn't remove it
                     date=fund_data[3].replace('.', '-')[:-1],
                     price=float(fund_data[2].replace(',', '.')),
                     currency=currency,
                     isin=isin,
-                    symbol=isin,
                 )
 
                 instruments.append({

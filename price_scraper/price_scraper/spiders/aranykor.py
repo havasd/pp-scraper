@@ -1,5 +1,10 @@
+"""
+Scraper for Aranykor VPF
+"""
 import datetime
+from typing import Any
 import scrapy
+from scrapy.http import Response
 
 from price_scraper.items import PortfolioPerformanceHistoricalPrice
 
@@ -25,7 +30,7 @@ class AranykorSpider(scrapy.Spider):
                 req_month = 1
                 req_year += 1
 
-    def parse(self, response):
+    def parse(self, response: Response, **kwargs: Any):
         header = response.css("tr")[0].css("th::text").getall()
         for line in response.css("tr")[1:]:
             prices = line.css("td::text").getall()
@@ -35,7 +40,7 @@ class AranykorSpider(scrapy.Spider):
                     file_name=portfolio,
                     date=date.replace('.', '-'),
                     price=float(prices[idx]),
-                    name=f"Aranykor {portfolio}",
+                    security_name=f"Aranykor {portfolio}",
                     currency="HUF",
-                    symbol=f"ARANY_{portfolio[:5].upper()}"
+                    ticker_symbol=f"ARANY_{portfolio[:5].upper()}"
                 )

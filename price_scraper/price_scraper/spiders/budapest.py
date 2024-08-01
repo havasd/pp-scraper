@@ -34,9 +34,9 @@ class BudapestPFSpider(scrapy.Spider):
                         file_name=portfolio,
                         date=date,
                         price=float(price),
-                        name=f"{fund_long_name} {portfolio} portfólió",
+                        security_name=f"{fund_long_name} {portfolio} portfólió",
                         currency="HUF",
-                        symbol=f"{fund_short_name}_{portfolio[:5].upper()}"
+                        ticker_symbol=f"{fund_short_name}_{portfolio[:5].upper()}"
                     )
 
     @staticmethod

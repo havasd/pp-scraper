@@ -48,9 +48,9 @@ class AllianzVPFSpider(scrapy.Spider):
                         file_name=portfolio.split(' ')[0],
                         date=date,
                         price=price,
-                        name=f"Allianz Önkéntes Pénztárak {portfolio}",
+                        security_name=f"Allianz Önkéntes Pénztárak {portfolio}",
                         currency="HUF",
-                        symbol=f"ALLÖNYP_{portfolio[:5].upper()}"
+                        ticker_symbol=f"ALLÖNYP_{portfolio[:5].upper()}"
                     )
 
     @staticmethod

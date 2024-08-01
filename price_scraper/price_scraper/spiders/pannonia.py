@@ -1,4 +1,10 @@
+"""
+Scraper for Pannónia VPF
+"""
+
+from typing import Any
 import scrapy
+from scrapy.http import Response
 
 from price_scraper.items import PortfolioPerformanceHistoricalPrice
 
@@ -12,10 +18,11 @@ class PannoniaVPFSpider(scrapy.Spider):
     name = "pannonia_nyugdij"
 
     def start_requests(self):
+        # pylint: disable=line-too-long
         url = "https://tagiportalpnyp.pannonianyp.hu/ingridportal/api/public/ugyfelszolgalat/getarfolyamok"
         yield scrapy.Request(url=url, callback=self.parse, method="POST")
 
-    def parse(self, response):
+    def parse(self, response: Response, **kwargs: Any):
         data = response.json()
         for elem in data:
             portfolio = elem['label']
@@ -26,7 +33,7 @@ class PannoniaVPFSpider(scrapy.Spider):
                     file_name=portfolio,
                     date=date,
                     price=price,
-                    name=f"Pannónia Nyugdíjpénztár {portfolio} portfólió",
+                    security_name=f"Pannónia Nyugdíjpénztár {portfolio} portfólió",
                     currency="HUF",
-                    symbol=f"PANÖNYP_{portfolio[:5].upper()}"
+                    ticker_symbol=f"PANÖNYP_{portfolio[:5].upper()}".replace(' ', '')
                 )
