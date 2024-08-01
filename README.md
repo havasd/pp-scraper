@@ -2,6 +2,12 @@
 
 Portfolio performance compatible scraper for hungarian instruments.
 
+Scraping is done every weekday around noon as a batch job for all data sources and the results are uploaded to [pp-data](https://github.com/havasd/pp-data) repository.
+
+Primarily features:
+- daily price data scraping in a json format per instrument for the below data sources
+- optional historical price generation
+
 ## Implemented Spiders
 
 |Data source name                                             | Spider name | Notes |
@@ -15,6 +21,7 @@ Portfolio performance compatible scraper for hungarian instruments.
 | [Honved](https://hnyp.hu/arfolyamok)                        | honved_nyugdij | Can scrape historical data |
 | [Horizont](https://horizontmagannyugdijpenztar.hu/arfolyamok) | horizont_nyugdij | Can scrape historical data |
 | [MÁK](https://www.allampapir.hu/kincstari_arfolyamjegyzes/) | mak         | Scrapes only latest data |
+| [MÁK](https://www.allampapir.hu/kincstari_arfolyamjegyzes/) | mak_historical | Scrapes historical data from PDF report generator endpoint for a given time range. It uses tesseract OCR for extracting data from the PDF files. Best effort, the OCR makes some mistakes in certain cases for parsing tables |
 | [MBH](https://www.mbhnyp.hu/arfolyamlekerdezes)             | mbh_nyugdij | Can scrape historical data |
 | [OTP](https://www.otpnyugdij.hu/hu/arfolyamok)              | otp_nyugdij | Can scrape historical data |
 | [Pannónia](https://www.pannonianyp.hu/arfolyamok/)          | pannonia_nyugdij | Can scrape historical data |
@@ -22,9 +29,10 @@ Portfolio performance compatible scraper for hungarian instruments.
 
 ## Installation
 
-For local execution you need to install the following packages
+For local execution you need to install the following packages.
 
+### Ubuntu
 
-1. Install `python3 python3-dev python3-pip libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev python3-venv docker.io tesseract-ocr`
+1. Install `sudo apt-get install python3 python3-dev python3-pip libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev python3-venv docker.io tesseract-ocr`
 2. `pip install -r requirements.txt`
 
