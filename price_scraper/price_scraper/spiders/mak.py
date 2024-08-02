@@ -44,7 +44,7 @@ class MakDailySpider(scrapy.Spider):
                 security_type = "MÁPP"
 
             # custom price calculation for bonds with market prices
-            if security_type in ['KTV', 'DKJ']:
+            if security_type in ['DKJ']:
                 price = bid_pct
             else:
                 # 0 is represented as integer and non-zero interest is string
