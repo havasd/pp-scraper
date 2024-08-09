@@ -23,7 +23,6 @@ class OtpVPFSpider(scrapy.Spider):
             date = day['pdate']
             date = f"{date[0:4]}-{date[4:6]}-{date[6:]}"
             del day['pdate']
-            print(day)
             for portfolio, price in day.items():
                 portfolio = OtpVPFSpider.convert_portfolio(portfolio)
                 yield PortfolioPerformanceHistoricalPrice(
