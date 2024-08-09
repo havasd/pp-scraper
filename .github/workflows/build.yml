@@ -31,4 +31,5 @@ jobs:
         scrapy crawl aranykor -a base_dir=../test-dir
         scrapy crawl mak -a base_dir=../test-dir
         scrapy crawl bamosz -a base_dir=../test-dir
+        scrapy crawl otp_nyugdij -a base_dir=../test-dir
 
