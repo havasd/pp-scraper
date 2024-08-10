@@ -17,6 +17,8 @@ class AllianzVPFSpider(scrapy.Spider):
     def start_requests(self):
         end_date = datetime.date.today()
         start_date = end_date - relativedelta(days=20)
+        # for historical generation
+        start_date = datetime.date(2008, 1, 1)
         url = f'https://penztar.allianz.hu/web_graf/Graf_tabla.php?kezdes={start_date.strftime("%Y%m%d")}&vege={end_date.strftime("%Y%m%d")}'
         yield scrapy.Request(url=url, callback=self.parse)
 
@@ -40,7 +42,7 @@ class AllianzVPFSpider(scrapy.Spider):
                 continue
             date = row_datas[0].replace('.', '-')
             for idx, data in enumerate(row_datas[1:]):
-                portfolio = portfolios[idx - 1]
+                portfolio = portfolios[idx]
                 price = float(data.replace(',', '.'))
                 yield PortfolioPerformanceHistoricalPrice(
                         file_name=portfolio.split(' ')[0],
