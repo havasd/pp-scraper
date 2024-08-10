@@ -28,10 +28,10 @@ jobs:
     - name: Test build
       run: |
         cd price_scraper
-        scrapy crawl aranykor -a base_dir=../test-dir -L ERROR
-        scrapy crawl mak -a base_dir=../test-dir -L ERROR
-        scrapy crawl bamosz -a base_dir=../test-dir -L ERROR
-        scrapy crawl otp_nyugdij -a base_dir=../test-dir -L ERROR
-        scrapy crawl budapest_nyugdij -a base_dir=../test-dir -L ERROR
-        scrapy crawl pannonia_nyugdij -a base_dir=../test-dir -L ERROR
+        scrapy crawl aranykor -a base_dir=../test-dir -L INFO
+        scrapy crawl mak -a base_dir=../test-dir -L INFO
+        scrapy crawl bamosz -a base_dir=../test-dir -L INFO
+        scrapy crawl otp_nyugdij -a base_dir=../test-dir -L INFO
+        scrapy crawl budapest_nyugdij -a base_dir=../test-dir -L INFO
+        scrapy crawl mbh_nyugdij -a base_dir=../test-dir -L INFO
 
