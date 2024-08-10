@@ -45,7 +45,7 @@ class MbhVPFSpider(scrapy.Spider):
             row_datas = row.css('div.column::text').extract()
             date = row_datas[0]
             for idx, data in enumerate(row_datas[1:]):
-                portfolio = portfolios[idx - 1]
+                portfolio = portfolios[idx]
                 price = float(data.replace(',', '.'))
                 yield PortfolioPerformanceHistoricalPrice(
                         file_name=portfolio.split(' ')[0],
