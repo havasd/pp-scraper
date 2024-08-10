@@ -35,4 +35,5 @@ jobs:
         scrapy crawl budapest_nyugdij -a base_dir=../test-dir -L INFO
         scrapy crawl mbh_nyugdij -a base_dir=../test-dir -L INFO
         scrapy crawl horizont_nyugdij -a base_dir=../test-dir -L INFO
+        scrapy crawl allianz_nyugdij -a base_dir=../test-dir -L INFO
 
