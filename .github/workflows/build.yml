@@ -33,4 +33,5 @@ jobs:
         scrapy crawl bamosz -a base_dir=../test-dir -L ERROR
         scrapy crawl otp_nyugdij -a base_dir=../test-dir -L ERROR
         scrapy crawl budapest_nyugdij -a base_dir=../test-dir -L ERROR
+        scrapy crawl pannonia_nyugdij -a base_dir=../test-dir -L ERROR
 
