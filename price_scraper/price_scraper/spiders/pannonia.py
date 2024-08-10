@@ -6,7 +6,7 @@ class PannoniaVPFSpider(scrapy.Spider):
     """
     Scrapes Pannónia VPF portfolio prices
 
-    URL: https://www.mbhbank.hu/apps/backend/exchange-rate/exchange-rate-voluntary?active=true&secure=true&fromDate=<from>&toDate=<to>
+    URL: https://tagiportalpnyp.pannonianyp.hu/ingridportal/api/public/ugyfelszolgalat/getarfolyamok
     """
 
     name = "pannonia_nyugdij"
