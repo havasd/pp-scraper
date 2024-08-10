@@ -35,6 +35,7 @@ jobs:
         scrapy crawl horizont_nyugdij -a base_dir=../pp-data -L INFO
         scrapy crawl allianz_nyugdij -a base_dir=../pp-data -L INFO
         scrapy crawl pannonia_nyugdij -a base_dir=../pp-data -L INFO
+        scrapy crawl erste_nyugdij -a base_dir=../pp-data -L INFO
     - name: Push historical prices to pp-data
       uses: cpina/github-action-push-to-another-repository@main
       env:
