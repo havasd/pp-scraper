@@ -13,18 +13,21 @@ class MbhVPFSpider(scrapy.Spider):
     https://horizontmagannyugdijpenztar.hu/arfolyamok request data: `date=2024-02`
     """
 
-    name = "horizont_nyugdij"
+    name = 'horizont_nyugdij'
 
     def start_requests(self):
-        url = "https://horizontmagannyugdijpenztar.hu/arfolyamok"
         end_date = datetime.date.today()
-        # default scrape interval is current month - 1 months just to be safe to not to miss anything
+        # default scrape interval is current month-1 months just to be safe to not to miss anything
         curr_date = end_date - relativedelta(months=1)
         while curr_date <= end_date:
-            data = f"date={curr_date.strftime('%Y-%m')}"
-            yield scrapy.Request(url=url, callback=self.parse, method="POST", body=data, headers={
-                'Content-Type': 'application/x-www-form-urlencoded',
-            })
+            yield scrapy.FormRequest(
+                url='https://horizontmagannyugdijpenztar.hu/arfolyamok',
+                callback=self.parse,
+                method='POST',
+                formdata={
+                    'date': curr_date.strftime('%Y-%m')
+                },
+            )
             curr_date = curr_date + relativedelta(months=1)
 
     def parse(self, response):
@@ -51,7 +54,7 @@ class MbhVPFSpider(scrapy.Spider):
                         file_name=portfolio.split(' ')[0],
                         date=date,
                         price=price,
-                        name=f"Horizont Magánnyugdíjpénztár {portfolio}",
-                        currency="HUF",
-                        symbol=f"HORMNYP_{portfolio[:5].upper()}"
+                        name=f'Horizont Magánnyugdíjpénztár {portfolio}',
+                        currency='HUF',
+                        symbol=f'HORMNYP_{portfolio[:5].upper()}'
                     )
