@@ -42,6 +42,7 @@ class PriceExporterPipeline:
                 f"Date {adapter['date']} is already stored for instrument {adapter['file_name']}"
             )
         exporter.export_item(item)
+        self.stored_dates[self.file_name(adapter["file_name"])].add(adapter["date"])
         return item
 
     def _create_exporter(self, name):
