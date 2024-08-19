@@ -1,4 +1,4 @@
-name: Scrapes all defined sites and publishes to pp-data repository.
+name: Scrape and publish
 on:
   schedule:
     - cron: "0 17 * * 1-5"
