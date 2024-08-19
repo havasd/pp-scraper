@@ -1,5 +1,10 @@
+"""
+Scraper for Erste VPF
+"""
 import csv
+from typing import Any
 import scrapy
+from scrapy.http import Response
 
 from price_scraper.items import PortfolioPerformanceHistoricalPrice
 
@@ -15,14 +20,18 @@ class ErsteVPFSpider(scrapy.Spider):
     name = "erste_nyugdij"
     start_urls = ["https://www.erstenyugdijpenztar.hu/tagiportal/hu/arfolyamok.html"]
 
-    def parse(self, response):
+    def __init__(self, *args, csv_data=None, **kwargs):
+        super(ErsteVPFSpider, self).__init__(*args, **kwargs)
+        self.csv_data = csv_data
+
+    def parse(self, response: Response, **kwargs: Any):
         """
         Parses portfolios from the response which is a complete page.
         """
 
         # if you want to export csv data with this spider make sure to change this
-        if False:
-            for item in self.parse_csv('<replace with your path to csv>'):
+        if self.csv_data:
+            for item in self.parse_csv(self.csv_data):
                 yield item
             return
 

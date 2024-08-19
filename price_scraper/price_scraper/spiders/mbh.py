@@ -1,6 +1,10 @@
+"""
+Scraper for MBH VPF
+"""
+from typing import Any
 import scrapy
 
-from scrapy.http import JsonRequest
+from scrapy.http import JsonRequest, Response
 from price_scraper.items import PortfolioPerformanceHistoricalPrice
 
 class MbhVPFSpider(scrapy.Spider):
@@ -11,7 +15,8 @@ class MbhVPFSpider(scrapy.Spider):
     Method: POST
     Recent prices: https://webapi.mbhnyp.hu/publicapi/api/arfolyam/onyp/get_arfolyam
     Contains prices from 2010
-    Historical prices: https://webapi.mbhnyp.hu/publicapi/api/arfolyam/onyp/get_arfolyam_ev request data:  {"requestData":{"ev":"2017"}}
+    Historical prices: https://webapi.mbhnyp.hu/publicapi/api/arfolyam/onyp/get_arfolyam_ev
+    request data: {"requestData":{"ev":"2017"}}
     """
 
     name = "mbh_nyugdij"
@@ -23,7 +28,7 @@ class MbhVPFSpider(scrapy.Spider):
         }
         yield JsonRequest(url=url, callback=self.parse, method="POST", data=data)
 
-    def parse(self, response):
+    def parse(self, response: Response, **kwargs: Any):
         """
         Parses MBH api response for prices of portfolios.
 

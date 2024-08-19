@@ -1,9 +1,14 @@
+"""
+Scraper for OTP VPF
+"""
+
 import csv
 import datetime
-import io
-import scrapy
-
 from functools import partial
+import io
+from typing import Any
+import scrapy
+from scrapy.http import Response
 
 from price_scraper.items import PortfolioPerformanceHistoricalPrice
 
@@ -17,7 +22,7 @@ class OtpVPFSpider(scrapy.Spider):
     name = "otp_nyugdij"
     start_urls = ["https://www.otpnyugdij.hu/api/arfolyam/aktualis"]
 
-    def parse(self, response):
+    def parse(self, response: Response, **kwargs: Any):
         data = response.json()
         for day in data:
             date = day['pdate']
@@ -66,12 +71,24 @@ class OtpVPFHistoricalSpider(scrapy.Spider):
     def start_requests(self):
         today = datetime.date.today()
         today = today.strftime("%Y%m%d")
-        portfolios = ["Kockázatkerülő", "Klasszikus", "Óvatos", "Kiegyensúlyozott", "Növekedési", "Dinamikus"]
+        portfolios = [
+            "Kockázatkerülő",
+            "Klasszikus",
+            "Óvatos",
+            "Kiegyensúlyozott",
+            "Növekedési",
+            "Dinamikus"
+        ]
         for portfolio in portfolios:
+            # pylint: disable=line-too-long
             url = f"https://www.otpnyugdij.hu/api/arfolyam/letoltes?portfolios={portfolio}&startDate=20080101&endDate={today}"
-            yield scrapy.Request(url=url, callback=partial(self.parse, portfolio))
+            yield scrapy.Request(url=url, callback=partial(self.parse, portfolio=portfolio))
 
-    def parse(self, portfolio, response):
+    def parse(self, response: Response, **kwargs: Any):
+        """
+        Parses historical quote prices
+        """
+        portfolio= kwargs['portfolio']
         buffer = io.StringIO(response.text)
         reader = csv.reader(buffer, delimiter=';')
 

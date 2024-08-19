@@ -1,6 +1,12 @@
+"""
+Scraper for Szovetseg PPF
+"""
+
 from io import BytesIO
+from typing import Any
 from pandas import ExcelFile
 import scrapy
+from scrapy.http import Response
 
 from price_scraper.items import PortfolioPerformanceHistoricalPrice
 
@@ -19,7 +25,7 @@ class SzovetsegPPFSpider(scrapy.Spider):
     name = "szovetseg_nyugdij"
     start_urls = ["https://szovetsegnyp.hu/arfolyam.xlsx"]
 
-    def parse(self, response):
+    def parse(self, response: Response, **kwargs: Any):
         """
         Parses portfolios from the response which is a complete page.
         """
@@ -28,6 +34,7 @@ class SzovetsegPPFSpider(scrapy.Spider):
         dataframe = excel_data.parse(excel_data.sheet_names[0])
         portfolios = ["Klasszikus", "Kiegyensúlyozott", "Növekedési"]
         for row in dataframe.itertuples():
+            # pylint: disable=protected-access
             date = row._1
             # invalid date
             if date == '0000-00-00':

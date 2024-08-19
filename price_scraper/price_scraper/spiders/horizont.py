@@ -1,5 +1,10 @@
+"""
+Scraper for Horizont PPF
+"""
 import datetime
+from typing import Any
 import scrapy
+from scrapy.http import Response
 
 from dateutil.relativedelta import relativedelta
 from price_scraper.items import PortfolioPerformanceHistoricalPrice
@@ -30,7 +35,7 @@ class MbhVPFSpider(scrapy.Spider):
             )
             curr_date = curr_date + relativedelta(months=1)
 
-    def parse(self, response):
+    def parse(self, response: Response, **kwargs: Any):
         """
         Parses portfolios from the response which is a complete page.
         """

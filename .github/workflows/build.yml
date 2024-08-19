@@ -41,4 +41,3 @@ jobs:
         scrapy crawl szovetseg_nyugdij -a base_dir=../test-dir -L INFO
         scrapy crawl alfa_nyugdij -a base_dir=../test-dir -L INFO
         scrapy crawl honved_nyugdij -a base_dir=../test-dir -L INFO
-

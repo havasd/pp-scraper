@@ -1,12 +1,17 @@
+"""
+Scraper for MAK government bonds
+"""
 import datetime
 import re
 from functools import partial
+from typing import Any
 import scrapy
-from scrapy.http import JsonRequest
-from price_scraper.items import PortfolioPerformanceHistoricalPrice
-
+from scrapy.http import JsonRequest, Response
 from pdf2image import convert_from_bytes
 import pytesseract
+
+from price_scraper.items import PortfolioPerformanceHistoricalPrice
+
 
 class MakDailySpider(scrapy.Spider):
     """
@@ -19,7 +24,7 @@ class MakDailySpider(scrapy.Spider):
     name = "mak"
     start_urls = ["https://www.allampapir.hu/api/network_rate/m/get_papers"]
 
-    def parse(self, response):
+    def parse(self, response: Response, **kwargs: Any):
         """
         Scrapes the available bond types
         """
@@ -83,7 +88,8 @@ class MakHistoricalSpider(scrapy.Spider):
 
     We can get historical data by generating pdfs for every day and parse it.
     https://webkincstar.allamkincstar.gov.hu/report-service/report
-    POST data `{"clientCode":"all","reportName":"_20633_arfolyam_mak","language":"hu","report_params":[{"name":"datum","value":"2023-01-02"}]}`
+    POST data: `{"clientCode":"all","reportName":"_20633_arfolyam_mak","language":"hu",
+    "report_params":[{"name":"datum","value":"2023-01-02"}]}`
     """
 
     name = "mak_historical"
@@ -112,6 +118,7 @@ class MakHistoricalSpider(scrapy.Spider):
             (datetime.date(2023, 7, 2), datetime.date(2024, 1, 1)),
             (datetime.date(2024, 1, 2), datetime.date(2024, 8, 14)),
         ]
+        # increment manually
         date_range = date_ranges[0]
         end_date = date_range[1]
         start_date = date_range[0]
@@ -134,7 +141,7 @@ class MakHistoricalSpider(scrapy.Spider):
                 }
                 url = "https://webkincstar.allamkincstar.gov.hu/report-service/report"
                 yield JsonRequest(url=url,
-                    callback=partial(self.parse, start_date, report_name),
+                    callback=partial(self.parse, curr_date=start_date, report_name=report_name),
                     data=body,
                     headers={
                         'Accept': '*/*'
@@ -144,15 +151,23 @@ class MakHistoricalSpider(scrapy.Spider):
             start_date = start_date + offset
 
 
-    def parse(self, curr_date, report_name, response):
+    def parse(self, response: Response, **kwargs: Any):
         """
         Parses daily quote prices for bonds from pdf
         """
-        self.logger.info("Parsing data for date: %s, report type: %s", curr_date.strftime("%Y-%m-%d"), report_name)
+        curr_date = kwargs['curr_date']
+        report_name = kwargs['report_name']
+        self.logger.info("Parsing data for date: %s, report type: %s",
+            curr_date.strftime("%Y-%m-%d"),
+            report_name
+        )
         for item in self.parse_pdf(curr_date, response.body):
             yield item
 
     def parse_pdf(self, curr_date, data):
+        """
+        Converts the given PDF to images and then to string
+        """
         images = convert_from_bytes(data)
         for image in images:
             text = pytesseract.image_to_string(image)
