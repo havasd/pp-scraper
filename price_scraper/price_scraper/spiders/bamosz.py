@@ -1,5 +1,11 @@
+"""
+Scraper for Bamosz listed funds
+"""
+
 from functools import partial
+from typing import Any
 import scrapy
+from scrapy.http import Response
 import scrapy_splash
 
 from price_scraper.items import PortfolioPerformanceHistoricalPrice
@@ -14,7 +20,11 @@ class BamoszSpider(scrapy.Spider):
     name = "bamosz"
     start_urls = ["https://www.bamosz.hu/legfrissebb-adatok"]
 
-    def parse(self, response):
+    def __init__(self, *args, scrape_historical_data=False, **kwargs):
+        super(BamoszSpider, self).__init__(*args, **kwargs)
+        self.scrape_historical_data = scrape_historical_data
+
+    def parse(self, response: Response, **kwargs: Any):
         table = response.css('div[id="A6951:urlap:alapData_content"]')[0]
         fund_groups = table.css('table[class="dataTable2 alapokContainer specEvenOddTableGrey"]')
 
@@ -48,7 +58,7 @@ class BamoszSpider(scrapy.Spider):
         # you need to reduce the concurrent requests to 1
         # you need to start splash separately with
         # docker run -p 8050:8050 scrapinghub/splash
-        if False:
+        if self.scrape_historical_data:
             for instrument in instruments:
                 yield self.get_url_for_fund_page(instrument)
 

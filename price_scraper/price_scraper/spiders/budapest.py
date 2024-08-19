@@ -1,5 +1,10 @@
+"""
+Scraper for Budapest VPF and PPF
+"""
 import datetime
+from typing import Any
 import scrapy
+from scrapy.http import Response
 
 from price_scraper.items import PortfolioPerformanceHistoricalPrice
 
@@ -17,12 +22,14 @@ class BudapestPFSpider(scrapy.Spider):
         start_date = end_date - datetime.timedelta(days=14)
         start_date = start_date.strftime("%Y%m%d")
         end_date = end_date.strftime("%Y%m%d")
+        # pylint: disable=line-too-long
         url = f"https://www.mbhbank.hu/apps/backend/exchange-rate/exchange-rate-voluntary?active=true&secure=true&fromDate={start_date}&toDate={end_date}"
         yield scrapy.Request(url=url, callback=self.parse)
+        # pylint: disable=line-too-long
         url = f"https://www.mbhbank.hu/apps/backend/exchange-rate/exchange-rate-personal?growth=true&balanced=true&classic=true&fromDate={start_date}&toDate={end_date}"
         yield scrapy.Request(url=url, callback=self.parse)
 
-    def parse(self, response):
+    def parse(self, response: Response, **kwargs: Any):
         data = response.json()
         for day in data:
             date = day['date']

@@ -1,10 +1,16 @@
+"""
+Scraper for Alfa VPF
+"""
+
 import datetime
+from typing import Any
 import scrapy
+from scrapy.http import Response
 
 from dateutil.relativedelta import relativedelta
 from price_scraper.items import PortfolioPerformanceHistoricalPrice
 
-class AlphaVPFSpider(scrapy.Spider):
+class AlfaVPFSpider(scrapy.Spider):
     """
     Scrapes Alpha VPF current portfolio prices
 
@@ -41,7 +47,7 @@ class AlphaVPFSpider(scrapy.Spider):
             }
         )
 
-    def parse(self, response):
+    def parse(self, response: Response, **kwargs: Any):
         """
         Parses portfolios from the response which is a complete page.
 
