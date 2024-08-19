@@ -70,7 +70,7 @@ class AlphaVPFSpider(scrapy.Spider):
                         file_name=portfolio.split(' ')[0],
                         date=date,
                         price=float(price['ertek'].replace(',', '.')),
-                        name=f'Alfa Nyugdíjpénztár {portfolio} portfólió',
+                        security_name=f'Alfa Nyugdíjpénztár {portfolio} portfólió',
                         currency='HUF',
-                        symbol=f'ALFÖNYP_{portfolio[:5].upper()}'
+                        ticker_symbol=f'ALFÖNYP_{portfolio[:5].upper()}'
                     )

@@ -29,9 +29,9 @@ class OtpVPFSpider(scrapy.Spider):
                         file_name=portfolio,
                         date=date.replace('.', '-'),
                         price=price,
-                        name=f"OTP Önkéntes Nyugdíjpénztári {portfolio} portfólió",
+                        security_name=f"OTP Önkéntes Nyugdíjpénztári {portfolio} portfólió",
                         currency="HUF",
-                        symbol=f"OTPNY_{portfolio[:5].upper()}"
+                        ticker_symbol=f"OTPNY_{portfolio[:5].upper()}"
                     )
 
     @staticmethod
@@ -88,7 +88,7 @@ class OtpVPFHistoricalSpider(scrapy.Spider):
                     file_name=portfolio,
                     date=row[0].strip()[:-1].replace('.', '-').replace(' ', ''),
                     price=float(row[1]),
-                    name=f"OTP Önkéntes Nyugdíjpénztári {portfolio} Portfólió",
+                    security_name=f"OTP Önkéntes Nyugdíjpénztári {portfolio} Portfólió",
                     currency="HUF",
-                    symbol=f"OTPNY_{portfolio[:5].upper()}"
+                    ticker_symbol=f"OTPNY_{portfolio[:5].upper()}"
                 )

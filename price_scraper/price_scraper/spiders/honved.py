@@ -58,7 +58,7 @@ class HonvedVPFSpider(scrapy.Spider):
                         file_name=portfolio.split(' ')[0],
                         date=date,
                         price=price,
-                        name=f"Honvéd Közszolgálati Önkéntes Nyugdíjpénztár {portfolio}",
+                        security_name=f"Honvéd Közszolgálati Önkéntes Nyugdíjpénztár {portfolio}",
                         currency="HUF",
-                        symbol=f"HONÖNYP_{portfolio[:5].upper()}"
+                        ticker_symbol=f"HONÖNYP_{portfolio[:5].upper()}"
                     )

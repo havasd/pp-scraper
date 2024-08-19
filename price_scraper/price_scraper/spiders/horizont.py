@@ -54,7 +54,7 @@ class MbhVPFSpider(scrapy.Spider):
                         file_name=portfolio.split(' ')[0],
                         date=date,
                         price=price,
-                        name=f'Horizont Magánnyugdíjpénztár {portfolio}',
+                        security_name=f'Horizont Magánnyugdíjpénztár {portfolio}',
                         currency='HUF',
-                        symbol=f'HORMNYP_{portfolio[:5].upper()}'
+                        ticker_symbol=f'HORMNYP_{portfolio[:5].upper()}'
                     )

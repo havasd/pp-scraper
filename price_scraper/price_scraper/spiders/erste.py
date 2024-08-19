@@ -45,9 +45,9 @@ class ErsteVPFSpider(scrapy.Spider):
                         file_name=portfolio.split(' ')[0],
                         date=date.replace('.', '-'),
                         price=price,
-                        name=f"Erste Nyugdíjpénztár {portfolio} portfólió",
+                        security_name=f"Erste Nyugdíjpénztár {portfolio} portfólió",
                         currency="HUF",
-                        symbol=f"ERÖNYP_{portfolio[:5].upper()}"
+                        ticker_symbol=f"ERÖNYP_{portfolio[:5].upper()}"
                     )
 
     def parse_csv(self, path):
@@ -70,7 +70,7 @@ class ErsteVPFSpider(scrapy.Spider):
                             file_name=portfolio,
                             date=date,
                             price=float(column),
-                            name=f"Erste Nyugdíjpénztár {portfolio} portfólió",
+                            security_name=f"Erste Nyugdíjpénztár {portfolio} portfólió",
                             currency="HUF",
-                            symbol=f"ERÖNYP_{portfolio[:5].upper()}"
+                            ticker_symbol=f"ERÖNYP_{portfolio[:5].upper()}"
                         )

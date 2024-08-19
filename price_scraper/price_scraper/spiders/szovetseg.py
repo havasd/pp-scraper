@@ -38,7 +38,7 @@ class SzovetsegPPFSpider(scrapy.Spider):
                         file_name=portfolio.split(' ')[0],
                         date=date,
                         price=price,
-                        name=f"Szövetség Nyugdíjpénztár {portfolio} portfólió",
+                        security_name=f"Szövetség Nyugdíjpénztár {portfolio} portfólió",
                         currency="HUF",
-                        symbol=f"SZÖMNYP_{portfolio[:5].upper()}"
+                        ticker_symbol=f"SZÖMNYP_{portfolio[:5].upper()}"
                     )
