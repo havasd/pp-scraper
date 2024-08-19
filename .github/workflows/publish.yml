@@ -1,7 +1,7 @@
 name: Scrapes all defined sites and publishes to pp-data repository.
 on:
   schedule:
-    - cron: "* 12 * * 1-5"
+    - cron: "0 17 * * 1-5"
   workflow_dispatch:
 
 jobs:
