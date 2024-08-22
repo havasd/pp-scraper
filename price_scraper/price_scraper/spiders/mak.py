@@ -42,10 +42,13 @@ class MakDailySpider(scrapy.Spider):
         """
         content = response.json()
         for product in content['data']['data']:
-            bid_pct = product.get('bidPrice', '1').replace(',', '.')
-            # in some cases they return empty string
+            bid_pct = product.get('bidPrice', '')
+            # when there is an interest payment or close to expiry there is no bidPrice
+            # TODO(blaymoira): implement logic to set this to 100% when the `maturityInDays_val` field is 2 or 3
+            # in that case we should set the date to maturityDate
             if not bid_pct:
-                bid_pct = '1'
+                continue
+            bid_pct = bid_pct.replace(',', '.')
             bid_pct = float(bid_pct) / 100
 
             security_type = product['securityType']
