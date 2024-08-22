@@ -48,7 +48,7 @@ class MakDailySpider(scrapy.Spider):
             # in that case we should set the date to maturityDate
             if not bid_pct:
                 continue
-            bid_pct.replace(',', '.')
+            bid_pct = bid_pct.replace(',', '.')
             bid_pct = float(bid_pct) / 100
 
             security_type = product['securityType']
