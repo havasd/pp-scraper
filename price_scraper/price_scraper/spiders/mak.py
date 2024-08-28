@@ -42,29 +42,33 @@ class MakDailySpider(scrapy.Spider):
         """
         content = response.json()
         for product in content['data']['data']:
-            bid_pct = product.get('bidPrice', '')
-            # when there is an interest payment or close to expiry there is no bidPrice
-            # TODO(blaymoira): implement logic to set this to 100% when the `maturityInDays_val` field is 2 or 3
-            # in that case we should set the date to maturityDate
-            if not bid_pct:
-                continue
-            bid_pct = bid_pct.replace(',', '.')
-            bid_pct = float(bid_pct) / 100
-
+            days_until_expiry = product['maturityInDays_val']
+            settlement_date = product['settleDate'].replace('.', '-')
             security_type = product['securityType']
             # simplified notation for this type
             if security_type == "MÁP Plusz":
                 security_type = "MÁPP"
 
-            # custom price calculation for bonds with market prices
-            if security_type in ['DKJ']:
-                price = bid_pct
-            else:
-                # 0 is represented as integer and non-zero interest is string
-                accrued_interest = product['accruedInterest']
-                if isinstance(accrued_interest, str):
-                    accrued_interest = float(product['accruedInterest'].replace(',', '.'))
-                price = bid_pct + accrued_interest / 100
+            bid_pct = product.get('bidPrice', '')
+            if bid_pct:
+                bid_pct = float(bid_pct.replace(',', '.'))
+                # custom price calculation for bonds with market prices
+                if security_type != 'DKJ':
+                    # 0 is represented as integer and non-zero interest is string
+                    accrued_interest = product['accruedInterest']
+                    if isinstance(accrued_interest, str):
+                        accrued_interest = float(product['accruedInterest'].replace(',', '.'))
+                    bid_pct = bid_pct + accrued_interest
+            # when we are close to expiry we will set it to 100 percent on the maturity date
+            elif not bid_pct and days_until_expiry <= 5:
+                bid_pct = 100
+                settlement_date = product['maturityDate'].replace('.', '-')
+            # when there is an interest payment or close to expiry there is no bidPrice
+            elif not bid_pct:
+                continue
+
+            # convert to percentage in numeric
+            price = bid_pct / 100
 
             long_name = security_type_to_long_name(security_type)
             product_name = product['name'].removesuffix('_BABA').removesuffix('_EUR')
@@ -77,7 +81,7 @@ class MakDailySpider(scrapy.Spider):
 
             yield PortfolioPerformanceHistoricalPrice(
                 file_name=f"{security_type}_{product['name']}",
-                date=product['settleDate'].replace('.', '-'),
+                date=settlement_date,
                 price=price,
                 ticker_symbol=symbol,
                 security_name=f"{long_name} {product_name}",
