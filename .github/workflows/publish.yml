@@ -2,7 +2,7 @@ name: Scrape and publish
 run-name: Scrape and publish ${{ github.run_number }}
 on:
   schedule:
-    - cron: "0 17 * * 1-5"
+    - cron: "0 18 * * 1-5"
   workflow_dispatch:
 
 jobs:
