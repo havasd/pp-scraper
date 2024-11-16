@@ -2,7 +2,7 @@
 
 Portfolio performance compatible scraper for hungarian instruments.
 
-Scraping is done every weekday around 17:00 UTC time as a batch job for all data sources and the results are uploaded to [pp-data](https://github.com/havasd/pp-data) repository.
+Scraping is done every weekday around 18:00 UTC time as a batch job for all data sources and the results are uploaded to [pp-data](https://github.com/havasd/pp-data) repository.
 
 Primarily features:
 - daily price data scraping in a json format per instrument for the below data sources
