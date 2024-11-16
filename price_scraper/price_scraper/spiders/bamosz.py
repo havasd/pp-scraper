@@ -85,7 +85,7 @@ class BamoszSpider(scrapy.Spider):
             response,
             formid='A3225:j_idt8',
             formdata={
-                'A3225:j_idt8:startDate_input': '1990.01.01',
+                'A3225:j_idt8:startDate_input': '2024.09.01',
             },
             callback=partial(self.parse_historical_data, instrument)
         )

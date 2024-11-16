@@ -119,11 +119,12 @@ class MakHistoricalSpider(scrapy.Spider):
     def start_requests(self):
         date_ranges = [
             # start, end
-            (datetime.date(2022, 1, 1), datetime.date(2022, 7, 1)),
-            (datetime.date(2022, 7, 2), datetime.date(2023, 1, 1)),
-            (datetime.date(2023, 1, 2), datetime.date(2023, 7, 1)),
-            (datetime.date(2023, 7, 2), datetime.date(2024, 1, 1)),
-            (datetime.date(2024, 1, 2), datetime.date(2024, 8, 14)),
+            # (datetime.date(2022, 1, 1), datetime.date(2022, 7, 1)),
+            # (datetime.date(2022, 7, 2), datetime.date(2023, 1, 1)),
+            # (datetime.date(2023, 1, 2), datetime.date(2023, 7, 1)),
+            # (datetime.date(2023, 7, 2), datetime.date(2024, 1, 1)),
+            # (datetime.date(2024, 1, 2), datetime.date(2024, 8, 14)),
+            (datetime.date(2024, 9, 1), datetime.date(2024, 9, 25)),
         ]
         # increment manually
         date_range = date_ranges[0]
@@ -204,8 +205,8 @@ class MakHistoricalSpider(scrapy.Spider):
                 file_name=f"{security_type}_{name}",
                 date=curr_date,
                 price=bid_pct,
-                symbol=f"{security_type}_{name}",
-                name=f"{long_name} {name}",
+                ticker_symbol=f"{security_type}_{name}",
+                security_name=f"{long_name} {name}",
             )
 
     def get_bid_pct(self, content, security_type):
