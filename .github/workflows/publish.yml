@@ -7,7 +7,7 @@ on:
 
 jobs:
   generate:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v5
@@ -40,7 +40,7 @@ jobs:
         scrapy crawl alfa_nyugdij -a base_dir=../pp-data -L INFO
         scrapy crawl honved_nyugdij -a base_dir=../pp-data -L INFO
     - name: Push historical prices to pp-data
-      uses: cpina/github-action-push-to-another-repository@main
+      uses: havasd/github-action-push-to-another-repository@main
       env:
         SSH_DEPLOY_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
         API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
