@@ -133,7 +133,7 @@ class MakHistoricalSpider(scrapy.Spider):
             # (datetime.date(2023, 1, 2), datetime.date(2023, 7, 1)),
             # (datetime.date(2023, 7, 2), datetime.date(2024, 1, 1)),
             # (datetime.date(2024, 1, 2), datetime.date(2024, 8, 14)),
-            (datetime.date(2024, 9, 1), datetime.date(2024, 9, 25)),
+            (datetime.date(2025, 10, 15), datetime.date(2025, 10, 15)),
         ]
         # increment manually
         date_range = date_ranges[0]
@@ -270,9 +270,9 @@ class MakHistoricalSpider(scrapy.Spider):
         This is primarily the data from the PDF
         """
         match name:
-            case name if name[0] == 'N':
+            case name if name[0] == 'N' and re.search(r'/(\d)(\d)$', name) is not None:
                 return 'MÁPP'
-            case name if name[0] == 'N' and name[-2] in ['M']:
+            case name if re.search(r'/M(\d)([0-2]?)$', name) is not None:
                 return 'MÁPP_T'
             case name if name[0] == 'D':
                 return 'DKJ'
@@ -284,13 +284,14 @@ class MakHistoricalSpider(scrapy.Spider):
                 return 'EMÁP'
             case name if name[-5:] in ['X_EUR', 'Y_EUR']:
                 return 'PEMÁP'
-            case name if name[-1] in ['I', 'J', 'K', 'L']:
+            case name if re.search(r'/([IJKL])(\d?)$', name) is not None:
                 return 'PMÁP'
-            case name if name[-2:] in ['Q1', 'Q2', 'Q3', 'Q4']:
+            case name if re.search(r'/Q([1-4])(\d?)$', name) is not None:
                 return 'FixMáp'
-            case name if name[-1] in ['N', 'O', 'P', 'R']:
+            case name if re.search(r'/([NOPR])(\d?)$', name) is not None:
                 return 'BMÁP'
-            case _:
+            case name:
+                print(f"{name}")
                 return 'KTV'
 
 

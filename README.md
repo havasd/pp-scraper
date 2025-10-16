@@ -33,6 +33,6 @@ For local execution you need to install the following packages.
 
 ### Ubuntu
 
-1. Install `sudo apt-get install python3 python3-dev python3-pip libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev python3-venv docker.io tesseract-ocr`
+1. Install `sudo apt-get install python3 python3-dev python3-pip libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev python3-venv docker.io tesseract-ocr poppler-utils`
 2. `pip install -r requirements.txt`
 
