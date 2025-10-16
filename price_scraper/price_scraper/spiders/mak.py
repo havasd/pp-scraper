@@ -17,12 +17,20 @@ class MakDailySpider(scrapy.Spider):
     """
     Scrapes Hungarian Goverment Bonds daily quotes
 
+    You must use a post request.
+
     URL to get the suffix of pricing path: https://www.allampapir.hu/api/network_rate/m/get_papers
     URL for prices: https://www.allampapir.hu/api/network_rate/m/get_prices/<security type>
     """
 
     name = "mak"
-    start_urls = ["https://www.allampapir.hu/api/network_rate/m/get_papers"]
+
+    def start_requests(self):
+        yield scrapy.Request(
+            url='https://www.allampapir.hu/api/network_rate/m/get_papers',
+            method='POST',
+            callback=self.parse
+        )
 
     def parse(self, response: Response, **kwargs: Any):
         """
@@ -31,7 +39,8 @@ class MakDailySpider(scrapy.Spider):
         content = response.json()
         for bond_type in content['data'].keys():
             yield scrapy.Request(
-                f"https://www.allampapir.hu/api/network_rate///m/get_prices/{bond_type}",
+                url=f"https://www.allampapir.hu/api/network_rate///m/get_prices/{bond_type}",
+                method='POST',
                 callback=self.parse_type
             )
 
