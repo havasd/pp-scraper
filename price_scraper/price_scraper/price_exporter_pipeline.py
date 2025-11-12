@@ -25,7 +25,8 @@ class PriceExporterPipeline:
         """
         Called upon creating the spider
         """
-        self.base_directory = f"{spider.base_dir}/{spider.name}"
+        dir_name = "mak" if spider.name == "mak_historical" else spider.name
+        self.base_directory = f"{spider.base_dir}/{dir_name}"
 
     def close_spider(self, _spider):
         """

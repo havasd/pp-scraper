@@ -22,7 +22,8 @@ class InstrumentExporterPipeline:
         """
         Called upon creating the spider
         """
-        self.csv_output = Path(spider.base_dir) / "instruments" / f"{spider.name}.csv"
+        filename = "mak" if spider.name == "mak_historical" else spider.name
+        self.csv_output = Path(spider.base_dir) / "instruments" / f"{filename}.csv"
         self.csv_output.parent.mkdir(parents=True, exist_ok=True)
         # file_name => instruments
         self.csv_file = self.csv_output.open("wb")
