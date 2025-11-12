@@ -19,14 +19,16 @@ class BudapestPFSpider(scrapy.Spider):
 
     def start_requests(self):
         end_date = datetime.date.today()
-        start_date = end_date - datetime.timedelta(days=14)
+        start_date = end_date - datetime.timedelta(days=32)
         start_date = start_date.strftime("%Y%m%d")
         end_date = end_date.strftime("%Y%m%d")
         # pylint: disable=line-too-long
         url = f"https://www.mbhbank.hu/apps/backend/exchange-rate/exchange-rate-voluntary?active=true&secure=true&fromDate={start_date}&toDate={end_date}"
+        print(f"{url}")
         yield scrapy.Request(url=url, callback=self.parse)
         # pylint: disable=line-too-long
         url = f"https://www.mbhbank.hu/apps/backend/exchange-rate/exchange-rate-personal?growth=true&balanced=true&classic=true&fromDate={start_date}&toDate={end_date}"
+        print(f"{url}")
         yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response: Response, **kwargs: Any):
