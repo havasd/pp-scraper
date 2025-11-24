@@ -10,9 +10,9 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Checkout pp-data repo
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         repository: havasd/pp-data
         path: pp-data
