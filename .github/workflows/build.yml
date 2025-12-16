@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6
-    - uses: getsentry/action-setup-venv@v3.0.0
+    - uses: getsentry/action-setup-venv@v3.1.0
       id: venv
       with:
         python-version: 3.11
