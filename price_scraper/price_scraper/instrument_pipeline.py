@@ -71,7 +71,7 @@ def feed_url(output_dir, name):
     Creates a statically URL based on the given arguments
     """
     name = sanitize_file_name(name)
-    return f"https://cdn.statically.io/gh/havasd/pp-data/main/{output_dir}/{name}.json"
+    return f"https://cdn.jsdelivr.net/gh/havasd/pp-data@main/{output_dir}/{name}.json"
 
 def get_instrument_id(item):
     """
