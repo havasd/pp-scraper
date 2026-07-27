@@ -88,8 +88,7 @@ class MakDailySpider(scrapy.Spider):
             # more sensible naming for DKJ
             match security_type:
                 case "DKJ":
-                    product_name = product_name[1:]
-                    symbol = f"{security_type}{product_name}"
+                    symbol = f"{security_type}{product_name[1:]}"
 
             yield PortfolioPerformanceHistoricalPrice(
                 file_name=f"{security_type}_{product['name']}",
