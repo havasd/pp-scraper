@@ -29,12 +29,10 @@ class MakDailySpider(scrapy.Spider):
     def start_requests(self):
         yield scrapy.Request(
             url='https://www.allampapir.hu/kincstari_arfolyamjegyzes',
-            #url='https://www.allampapir.hu/api/networkRate/get_papers_with_prices',
-            #method='POST',
-            callback=self.parse
+            callback=self.parse_csrf_token
         )
 
-    def parse(self, response: Response, **kwargs: Any):
+    def parse_csrf_token(self, response: Response, **kwargs: Any):
         """
         Scrapes the available bond types
         """
