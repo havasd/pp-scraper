@@ -3,16 +3,15 @@ Scraper for MAK government bonds
 """
 import datetime
 import re
-from functools import partial
-from typing import Any
+import subprocess
+from typing import Any, Iterator
 import scrapy
 from scrapy.http import JsonRequest, Response
+# Only needed for the OCR fallback (scanned / text-less PDFs)
 from pdf2image import convert_from_bytes
 import pytesseract
-import json
 
 from price_scraper.items import PortfolioPerformanceHistoricalPrice
-
 
 class MakDailySpider(scrapy.Spider):
     """
@@ -118,30 +117,54 @@ class MakDailySpider(scrapy.Spider):
 
 class MakHistoricalSpider(scrapy.Spider):
     """
-    Scrapes Hungarian Goverment Bonds historical quotes from 2022.01.01
+    Scrapes Hungarian Government Bonds historical quotes.
 
-    We can get historical data by generating pdfs for every day and parse it.
-    https://webkincstar.allamkincstar.gov.hu/report-service/report
-    POST data: `{"clientCode":"all","reportName":"_20633_arfolyam_mak","language":"hu",
-    "report_params":[{"name":"datum","value":"2023-01-02"}]}`
+    We can get historical data by generating PDFs for every day and parsing them.
+    POST https://webkincstar.allamkincstar.gov.hu/report-service/report
+    Body:
+        {"clientCode":"all","reportName":"_20633_arfolyam_mak","language":"hu",
+         "report_params":[{"name":"datum","value":"2026-09-25"}],
+         "lang":"hu","channel":"WEB","channelId":2}
+
+    NOTE: since the new webkincstar frontend the `lang` field is mandatory,
+    without it the backend answers with HTTP 500 (JSON error body).
+
+    The list of report names can be fetched from:
+    GET https://webkincstar.allamkincstar.gov.hu/instrument-service/instrumentgroup/group?lang=hu
+    (field: `priceReportName`)
     """
 
     name = "mak_historical"
 
+    report_url = "https://webkincstar.allamkincstar.gov.hu/report-service/report"
+
+    custom_settings = {
+        # be nice with the state treasury backend
+        "CONCURRENT_REQUESTS": 4,
+        "DOWNLOAD_DELAY": 0.25,
+        "RETRY_HTTP_CODES": [500, 502, 503, 504, 522, 524, 408, 429],
+    }
+
     report_names = [
-        "_20631_arfolyam_dkj",
-        "_20632_arfolyam_kkj",
-        "_20633_arfolyam_mak",
-        "_20638_arfolyam_pemak",
-        "_20642_arfolyam_start",
-        "_207461_arfolyam_mapp",
+        "_20631_arfolyam_dkj",      # Diszkont Kincstárjegy
+        "_20632_arfolyam_kkj",      # Egyéves Magyar Állampapír
+        "_20633_arfolyam_mak",      # MÁK/BMÁP/PMÁP/FixMÁP
+        "_20638_arfolyam_pemak",    # EMÁP/PEMÁP
+        "_20642_arfolyam_start",    # Babakötvény
+        "_207461_arfolyam_mapp",    # Magyar Állampapír Plusz
         # these are not useful
-        #"_20644_arfolyam_belf_koz",
-        #"_20664_arfolyam_omak",
+        # "_20644_arfolyam_belf_koz",
+        # "_20664_arfolyam_omak",
     ]
 
-    # regex which identifies the beginning of the lines inthe table
-    line_matcher = re.compile(r"^((K|N)\d{4}\/)|(D\d{6})|(\d{4}\/)")
+    # regex which identifies the beginning of the lines in the table
+    # (the text layer can contain leading spaces, e.g. Babakötvény)
+    line_matcher = re.compile(r"^\s*(?:[KN]\d{4}/|D\d{6}\b|\d{4}/)")
+
+    async def start(self):
+        # Scrapy >= 2.13 entry point; older versions use start_requests()
+        for request in self.start_requests():
+            yield request
 
     def start_requests(self):
         date_ranges = [
@@ -151,166 +174,216 @@ class MakHistoricalSpider(scrapy.Spider):
             # (datetime.date(2023, 1, 2), datetime.date(2023, 7, 1)),
             # (datetime.date(2023, 7, 2), datetime.date(2024, 1, 1)),
             # (datetime.date(2024, 1, 2), datetime.date(2024, 8, 14)),
-            (datetime.date(2025, 10, 15), datetime.date(2025, 10, 15)),
+            (datetime.date(2026, 9, 15), datetime.date(2026, 9, 25)),
         ]
         # increment manually
-        date_range = date_ranges[0]
-        end_date = date_range[1]
-        start_date = date_range[0]
-
+        start_date, end_date = date_ranges[0]
         offset = datetime.timedelta(days=1)
 
         while start_date <= end_date:
             for report_name in self.report_names:
-                body = {
-                    "clientCode": "all",
-                    "reportName":  report_name,
-                    #"reportName":  self.report_names[1],
-                    "language": "hu",
-                    "report_params": [
-                        {
-                            "name": "datum",
-                            "value": start_date.strftime("%Y-%m-%d")
-                        }
-                    ]
-                }
-                url = "https://webkincstar.allamkincstar.gov.hu/report-service/report"
-                yield JsonRequest(url=url,
-                    callback=partial(self.parse, curr_date=start_date, report_name=report_name),
-                    data=body,
-                    headers={
-                        'Accept': '*/*'
-                    }
+                yield JsonRequest(
+                    url=self.report_url,
+                    data=self.build_body(report_name, start_date),
+                    headers={"Accept": "application/pdf"},
+                    callback=self.parse,
+                    errback=self.on_error,
+                    cb_kwargs={"curr_date": start_date, "report_name": report_name},
+                    # the URL/body pair is unique, but be explicit
+                    dont_filter=True,
                 )
+            start_date += offset
 
-            start_date = start_date + offset
+    @staticmethod
+    def build_body(report_name: str, date: datetime.date) -> dict:
+        return {
+            "clientCode": "all",
+            "reportName": report_name,
+            "language": "hu",
+            "report_params": [
+                {"name": "datum", "value": date.strftime("%Y-%m-%d")},
+            ],
+            # new, required by the new frontend/backend
+            "lang": "hu",
+            "channel": "WEB",
+            "channelId": 2,
+        }
 
+    def on_error(self, failure):
+        request = failure.request
+        self.logger.error(
+            "Request failed for %s / %s: %r",
+            request.cb_kwargs.get("curr_date"),
+            request.cb_kwargs.get("report_name"),
+            failure.value,
+        )
 
     def parse(self, response: Response, **kwargs: Any):
         """
         Parses daily quote prices for bonds from pdf
         """
-        curr_date = kwargs['curr_date']
-        report_name = kwargs['report_name']
+        curr_date: datetime.date = kwargs["curr_date"]
+        report_name: str = kwargs["report_name"]
+
+        content_type = response.headers.get("Content-Type", b"").decode().lower()
+        if "application/pdf" not in content_type or not response.body.startswith(b"%PDF"):
+            self.logger.error(
+                "Not a PDF for date %s, report %s (status %s, type %s): %s",
+                curr_date, report_name, response.status, content_type, response.text[:300],
+            )
+            return
+
         self.logger.info("Parsing data for date: %s, report type: %s",
-            curr_date.strftime("%Y-%m-%d"),
-            report_name
-        )
-        for item in self.parse_pdf(curr_date, response.body):
-            yield item
+                         curr_date.strftime("%Y-%m-%d"), report_name)
 
-    def parse_pdf(self, curr_date, data):
+        yield from self.parse_pdf(curr_date, response.body)
+
+    # ------------------------------------------------------------------ PDF
+
+    def parse_pdf(self, curr_date: datetime.date, data: bytes) -> Iterator[Any]:
         """
-        Converts the given PDF to images and then to string
+        The new PDFs contain a real text layer, so we read that (fast and
+        exact). OCR is kept only as a fallback if no text could be extracted.
         """
+        text = self.pdf_to_text(data)
+        ocr = False
+        if not text.strip():
+            self.logger.warning("No text layer in PDF for %s, falling back to OCR", curr_date)
+            text = self.pdf_to_text_ocr(data)
+            ocr = True
+
+        for line in text.splitlines():
+            if not self.line_matcher.search(line):
+                continue
+            product = self.parse_data(curr_date, line, ocr=ocr)
+            if product is not None:
+                yield product
+
+    @staticmethod
+    def pdf_to_text(data: bytes) -> str:
+        """
+        Uses poppler's pdftotext (already a dependency of pdf2image).
+        `-layout` keeps the table columns on one line.
+        """
+        try:
+            result = subprocess.run(
+                ["pdftotext", "-layout", "-enc", "UTF-8", "-", "-"],
+                input=data, capture_output=True, check=True, timeout=60,
+            )
+        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+            return ""
+        return result.stdout.decode("utf-8", errors="replace")
+
+    @staticmethod
+    def pdf_to_text_ocr(data: bytes) -> str:
         images = convert_from_bytes(data)
-        for image in images:
-            text = pytesseract.image_to_string(image)
-            for line in text.splitlines():
-                if MakHistoricalSpider.line_matcher.search(line):
-                    product = self.parse_data(curr_date, line)
-                    if product is None:
-                        continue
-                    yield product
+        return "\n".join(pytesseract.image_to_string(image) for image in images)
 
-    def parse_data(self, curr_date, pdf_line):
+    # --------------------------------------------------------------- parsing
+
+    def parse_data(self, curr_date: datetime.date, pdf_line: str, ocr: bool = False):
         """
         Parses specific bond contract from pdf lines.
         This applies to MÁPP, MÁK, PMÁP, PEMÁP, 1MÁP, etc...
         """
-        content = [i for i in pdf_line.split() if i != '%']
-        name = self.sanitize_symbol(content[0])
-        #expiry_date = content[-1]
+        content = [i for i in pdf_line.split() if i != "%"]
+        if not content:
+            return None
+        name = self.sanitize_symbol(content[0]) if ocr else content[0]
         security_type = self.symbol_to_security_type(name)
-        bid_pct = self.get_bid_pct(content, security_type)
+        bid_pct = self.get_bid_pct(content, security_type, ocr=ocr)
         if bid_pct is None:
             return None
 
         long_name = security_type_to_long_name(security_type)
 
         return PortfolioPerformanceHistoricalPrice(
-                file_name=f"{security_type}_{name}",
-                date=curr_date,
-                price=bid_pct,
-                ticker_symbol=f"{security_type}_{name}",
-                security_name=f"{long_name} {name}",
-            )
+            file_name=f"{security_type}_{name}",
+            date=curr_date,
+            price=bid_pct,
+            ticker_symbol=f"{security_type}_{name}",
+            security_name=f"{long_name} {name}",
+        )
 
-    def get_bid_pct(self, content, security_type):
+    def get_bid_pct(self, content, security_type, ocr: bool = False):
         """
-        Extracts bid pct with the necessary conversions
+        Extracts bid pct (gross = net + accrued interest; for DKJ the net price)
         """
         try:
-            data = content[self.get_bid_pct_index(security_type)].replace('%', '').replace(',', '.')
+            data = content[self.get_bid_pct_index(security_type)]
         except IndexError:
             self.logger.error("Not enough data: %s", content)
             return None
+        data = data.replace("%", "").replace(",", ".")
         # there is no pricing for this day
-        if data == '-':
+        if data in ("-", "") or not re.fullmatch(r"\d+(\.\d+)?", data):
+            if data not in ("-", ""):
+                self.logger.warning("Unexpected price value %r in %s", data, content)
             return None
-        if data.startswith('0'):
-            data = '1' + data
-        bid_pct = float(data) / 100
-        return round(bid_pct, 10)
-
+        # OCR sometimes loses the leading '1' of e.g. 100.1234
+        if ocr and data.startswith("0"):
+            data = "1" + data
+        return round(float(data) / 100, 10)
 
     def sanitize_symbol(self, symbol: str):
         """
-        Corrects OCR errors
+        Corrects OCR errors (only used in OCR fallback mode)
         """
-        if symbol.endswith('/1') or symbol.endswith('/|') or symbol.endswith('/!'):
-            symbol = symbol[:-1] + 'I'
-        elif symbol.endswith('/0'):
-            symbol = symbol[:-1] + 'O'
-        elif symbol.endswith('/)') or symbol.endswith('/}'):
-            symbol = symbol[:-1] + 'J'
-        elif symbol.endswith('.') or symbol.endswith(','):
+        if symbol.endswith(("/1", "/|", "/!")):
+            symbol = symbol[:-1] + "I"
+        elif symbol.endswith("/0"):
+            symbol = symbol[:-1] + "O"
+        elif symbol.endswith(("/)", "/}")):
+            symbol = symbol[:-1] + "J"
+        elif symbol.endswith((".", ",")):
             symbol = symbol[:-1]
-        elif symbol.endswith('/6'):
-            symbol = symbol[:-1] + 'C'
+        elif symbol.endswith("/6"):
+            symbol = symbol[:-1] + "C"
         return symbol
 
     def get_bid_pct_index(self, security_type):
         """
         Returns the index in the line in which the bid pct + accrued interest is
+        (after dropping the standalone '%' tokens)
+
+        DKJ:   D260930  99.9148  6.22 ...                -> [1] vételi árfolyam
+        BABA:  2032/S_BABA  100.0000  105.4518 ...       -> [2] vételi bruttó
+        other: 2027/A  97.4623  2.7370  100.1993 ...     -> [3] vételi bruttó
         """
         match security_type:
-            case 'DKJ':
+            case "DKJ":
                 return 1
-            case 'BABA':
+            case "BABA":
                 return 2
             case _:
                 return 3
 
-    def symbol_to_security_type(self, name: str):
+    # (regex, security type) - the first match wins, the order matters
+    security_type_rules = [
+        (re.compile(r"^N\d{4}/\d{2}$"), "MÁPP"),           # N2026/40
+        (re.compile(r"^\d{4}/M\d{1,2}$"), "MÁPP_T"),        # 2030/M10
+        (re.compile(r"^N\d{4}/M\d{1,2}$"), "MÁPP_T"),       # N2029/M1
+        (re.compile(r"^D\d{6}$"), "DKJ"),                    # D260930
+        (re.compile(r"^K\d{4}/"), "1MÁP"),                   # K2027/...
+        (re.compile(r"^\d{4}/S_BABA$"), "BABA"),             # 2032/S_BABA
+        (re.compile(r"^\d{4}/U_EUR$"), "EMÁP"),              # 2029/U_EUR
+        (re.compile(r"^\d{4}/[XY]_EUR$"), "PEMÁP"),          # 2026/X_EUR
+        (re.compile(r"^\d{4}/[IJKL]\d?$"), "PMÁP"),         # 2027/I, 2035/I1
+        (re.compile(r"^\d{4}/Q\d{1,2}$"), "FixMÁP"),        # 2027/Q1, 2030/Q5
+        (re.compile(r"^\d{4}/[NOPR]\d?$"), "BMÁP"),         # 2026/O, 2028/R1
+        (re.compile(r"^\d{4}/[A-H]$"), "KTV"),               # 2026/D, 2027/A, 2032/G
+    ]
+
+    def symbol_to_security_type(self, name: str) -> str:
         """
-        Converts symbol to security_type.
-        This is primarily the data from the PDF
+        Converts symbol to security_type. Never returns None:
+        unknown symbols are logged and treated as KTV (Magyar Államkötvény).
         """
-        match name:
-            case name if name[0] == 'N' and re.search(r'/(\d)(\d)$', name) is not None:
-                return 'MÁPP'
-            case name if re.search(r'/M(\d)([0-2]?)$', name) is not None:
-                return 'MÁPP_T'
-            case name if name[0] == 'D':
-                return 'DKJ'
-            case name if name[0] == 'K':
-                return '1MÁP'
-            case name if name[-6:] == 'S_BABA':
-                return 'BABA'
-            case name if name[-5:] == 'U_EUR':
-                return 'EMÁP'
-            case name if name[-5:] in ['X_EUR', 'Y_EUR']:
-                return 'PEMÁP'
-            case name if re.search(r'/([IJKL])(\d?)$', name) is not None:
-                return 'PMÁP'
-            case name if re.search(r'/Q([1-4])(\d?)$', name) is not None:
-                return 'FixMáp'
-            case name if re.search(r'/([NOPR])(\d?)$', name) is not None:
-                return 'BMÁP'
-            case name:
-                print(f"{name}")
-                return 'KTV'
+        for pattern, security_type in self.security_type_rules:
+            if pattern.match(name):
+                return security_type
+        self.logger.warning("Unknown symbol %r, treating as KTV", name)
+        return "KTV"
 
 
 def security_type_to_long_name(security_type: str):
