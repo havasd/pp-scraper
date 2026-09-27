@@ -49,7 +49,7 @@ class AranykorSpiderv2(scrapy.Spider):
     """
     Scrapes Aranykor VPF portfolio prices
 
-    Base URL: https://www.aranykornyp.hu/public/arfolyamok/archivum
+    Base URL: https://www.aranykornyp.hu/arfolyamok
     """
 
     name = "aranykor"
@@ -92,6 +92,7 @@ class AranykorSpiderv2(scrapy.Spider):
             case "klasszikus": return "Klasszikus"
             case "egyensuly": return "Egyensúly"
             case "lendulet": return "Lendület"
+            case "penzpiaci": return "Pénzpiaci portfólió"
             case "esgDinamikus": return "ESG Dinamikus"
             case "postasBazis": return "Postás Bázis-Céldátum"
             case "postasX1": return "Postás X.1 Generáció 2027"
