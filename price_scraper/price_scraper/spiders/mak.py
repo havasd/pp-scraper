@@ -9,6 +9,7 @@ import scrapy
 from scrapy.http import JsonRequest, Response
 from pdf2image import convert_from_bytes
 import pytesseract
+import json
 
 from price_scraper.items import PortfolioPerformanceHistoricalPrice
 
@@ -27,8 +28,9 @@ class MakDailySpider(scrapy.Spider):
 
     def start_requests(self):
         yield scrapy.Request(
-            url='https://www.allampapir.hu/api/networkRate/get_papers_with_prices',
-            method='POST',
+            url='https://www.allampapir.hu/kincstari_arfolyamjegyzes',
+            #url='https://www.allampapir.hu/api/networkRate/get_papers_with_prices',
+            #method='POST',
             callback=self.parse
         )
 
@@ -36,17 +38,33 @@ class MakDailySpider(scrapy.Spider):
         """
         Scrapes the available bond types
         """
+        self.csrf_token = str(response.headers['Set-Cookie']).split(';')[0].split('=')[1]
+
+        yield JsonRequest(
+            url='https://www.allampapir.hu/api/networkRate/get_papers_with_prices',
+            method='POST',
+            headers={
+                'Origin': 'https://www.allampapir.hu',
+                'X-CSRF-TOKEN': self.csrf_token,
+            },
+            callback=self.parse_bond_types
+        )
+
+    def parse_bond_types(self, response: Response, **kwargs: Any):
         content = response.json()
         for bond_type in content['data']['papers'].keys():
             yield JsonRequest(
                 url=f"https://www.allampapir.hu/api/networkRate/get_prices",
                 method='POST',
+                headers={
+                    'Origin': 'https://www.allampapir.hu',
+                    'X-CSRF-TOKEN': self.csrf_token,
+                },
                 data={
-                    "paper": bond_type,
+                    'paper': bond_type,
                 },
                 callback=self.parse_type
             )
-
 
     def parse_type(self, response):
         """
